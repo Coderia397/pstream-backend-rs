@@ -4,4 +4,5 @@
 //! grouped by the subsystem that has to land first (Redis, Supabase, the
 //! torrent engine), and are declared in main.rs answering 501 until then.
 
+pub mod passthrough;
 pub mod stateless;

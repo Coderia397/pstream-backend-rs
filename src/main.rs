@@ -19,7 +19,7 @@ use axum::{
     Json, Router,
 };
 use config::Config;
-use routes::stateless;
+use routes::{passthrough, stateless};
 use serde_json::json;
 use std::sync::Arc;
 
@@ -73,12 +73,13 @@ async fn main() {
         .route("/proxy/stream", get(pstream_shared::proxy::stream))
         .route("/proxy/m3u8", get(stateless::proxy_alias))
         .route("/proxy/video", get(stateless::proxy_alias))
+        .route("/api/introdb/media", get(passthrough::media))
+        .route("/proxy/subtitle", get(passthrough::subtitle))
         // ── still on Node ────────────────────────────────────────────────
         .route("/api/debug-providers", get(|| not_ported("/api/debug-providers")))
         .route("/api/providers/health", get(|| not_ported("/api/providers/health")))
-        .route("/api/introdb/media", get(|| not_ported("/api/introdb/media")))
+        // waits on porting extractors/subs_vdrk.js, which it merges with IntroDB
         .route("/api/introdb/subtitles", get(|| not_ported("/api/introdb/subtitles")))
-        .route("/proxy/subtitle", get(|| not_ported("/proxy/subtitle")))
         .route("/proxy/subtitles/opensubtitles", get(|| not_ported("/proxy/subtitles/opensubtitles")))
         .route("/api/stream/diagnose", get(|| not_ported("/api/stream/diagnose")))
         .route("/api/media-probe", get(|| not_ported("/api/media-probe")))
