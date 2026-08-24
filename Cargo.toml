@@ -2,13 +2,14 @@
 name    = "pstream-backend"
 version = "0.1.0"
 edition = "2021"
+license = "MIT"
+repository = "https://github.com/Coderia397/pstream-backend-rs"
 
 # Rust port of the giga backend (index.js + resolver.js + services/).
 #
-# Unlike the phone resolver, this runs on a Hugging Face Space — x86_64, no
-# battery or memory pressure — so the motivation here is not binary size but
-# the same thing that made the resolver port worth doing: no node_modules to
-# resolve at deploy time, and the compiler catching the shape of every payload.
+# NOTE: the JS service this replaces is not deployed anywhere — the frontend
+# points at the phone resolver, and calls Supabase directly. See PORTING.md
+# before adding routes here; most of the 37 have no caller.
 
 [dependencies]
 # The 13 provider extractors, HTTP clients, streaming proxy, cache and the

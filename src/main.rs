@@ -1,6 +1,7 @@
 //! pstream giga backend — Rust port of `index.js`.
 //!
-//! Runs on a Hugging Face Space, not the phone. The full route surface of the
+//! NOTE: the JS service this replaces is not deployed anywhere; see
+//! PORTING.md. The full route surface of the
 //! JS server is declared here from the start so that what is and isn't ported
 //! is visible in one place: anything still on the JS side answers 501 with the
 //! reason, rather than 404, which would be indistinguishable from a typo in a
@@ -75,6 +76,7 @@ async fn main() {
         .route("/proxy/video", get(stateless::proxy_alias))
         .route("/api/introdb/media", get(passthrough::media))
         .route("/proxy/subtitle", get(passthrough::subtitle))
+        .route("/api/media-probe", get(pstream_shared::probe::media_probe))
         // ── still on Node ────────────────────────────────────────────────
         .route("/api/debug-providers", get(|| not_ported("/api/debug-providers")))
         .route("/api/providers/health", get(|| not_ported("/api/providers/health")))
@@ -82,7 +84,6 @@ async fn main() {
         .route("/api/introdb/subtitles", get(|| not_ported("/api/introdb/subtitles")))
         .route("/proxy/subtitles/opensubtitles", get(|| not_ported("/proxy/subtitles/opensubtitles")))
         .route("/api/stream/diagnose", get(|| not_ported("/api/stream/diagnose")))
-        .route("/api/media-probe", get(|| not_ported("/api/media-probe")))
         .route("/api/stream/report-error", post(|| not_ported("/api/stream/report-error")))
         .route("/api/stream/report-success", post(|| not_ported("/api/stream/report-success")))
         // ── auth + sync ──────────────────────────────────────────────────

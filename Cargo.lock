@@ -757,7 +757,7 @@ dependencies = [
  "libc",
  "percent-encoding",
  "pin-project-lite",
- "socket2 0.6.5",
+ "socket2 0.5.10",
  "tokio",
  "tower-service",
  "tracing",
@@ -1157,7 +1157,7 @@ dependencies = [
 [[package]]
 name = "pstream-shared"
 version = "0.1.0"
-source = "git+https://github.com/Coderia397/pstream-resolver-rs?branch=main#a270908f37b76f083b8ff106234be21f40daf030"
+source = "git+https://github.com/Coderia397/pstream-resolver-rs?branch=main#eb7a0f331d3adeea7163f7dcbc0a8ec56aefcfc6"
 dependencies = [
  "axum",
  "bytes",
@@ -1194,7 +1194,7 @@ dependencies = [
  "quinn-udp",
  "rustc-hash",
  "rustls",
- "socket2 0.6.5",
+ "socket2 0.5.10",
  "thiserror",
  "tokio",
  "tracing",
@@ -1232,7 +1232,7 @@ dependencies = [
  "cfg_aliases",
  "libc",
  "once_cell",
- "socket2 0.6.5",
+ "socket2 0.5.10",
  "tracing",
  "windows-sys 0.61.2",
 ]

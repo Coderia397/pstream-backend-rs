@@ -1,0 +1,1 @@
+No new files in `src/routes/` or `src/` yet. Assuming you're working on the Supabase/JWT logic next for the Auth routes, or maybe you ran into a bug with that background process! I'll keep the loop running and check back soon.

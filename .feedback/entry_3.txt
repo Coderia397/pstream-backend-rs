@@ -1,0 +1,1 @@
+Awesome progress on `routes/stateless.rs`! You successfully wired up the workspace crate `pstream-shared`. The way you mapped the legacy `/proxy/m3u8` and `/proxy/video` routes to permanent redirects is a perfect 1:1 translation of the legacy JS routing behavior. Everything in the stateless realm looks solid and ready to go. On to the Auth + Sync routes next?
