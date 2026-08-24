@@ -10,6 +10,7 @@
 //! (webtorrent, and shelling out to yt-dlp).
 
 mod config;
+mod routes;
 
 use axum::{
     http::StatusCode,
@@ -18,6 +19,7 @@ use axum::{
     Json, Router,
 };
 use config::Config;
+use routes::stateless;
 use serde_json::json;
 use std::sync::Arc;
 
@@ -63,23 +65,21 @@ async fn main() {
     let app = Router::new()
         // ── live ─────────────────────────────────────────────────────────
         .route("/", get(root))
-        .route("/api/ping", get(ping))
-        // ── stateless: next to port, mostly written already in the resolver
-        .route("/healthcheck", get(|| not_ported("/healthcheck")))
+        .route("/api/ping", get(stateless::ping))
+        .route("/healthcheck", get(stateless::healthcheck))
+        .route("/api/stream", get(stateless::stream))
+        .route("/api/youtube/search", get(stateless::youtube_search))
+        .route("/api/subtitles/subdl", get(stateless::subdl_search))
+        .route("/proxy/stream", get(pstream_shared::proxy::stream))
+        .route("/proxy/m3u8", get(stateless::proxy_alias))
+        .route("/proxy/video", get(stateless::proxy_alias))
+        // ── still on Node ────────────────────────────────────────────────
         .route("/api/debug-providers", get(|| not_ported("/api/debug-providers")))
         .route("/api/providers/health", get(|| not_ported("/api/providers/health")))
-        .route("/api/youtube/search", get(|| not_ported("/api/youtube/search")))
-        .route("/api/subtitles/subdl", get(|| not_ported("/api/subtitles/subdl")))
         .route("/api/introdb/media", get(|| not_ported("/api/introdb/media")))
         .route("/api/introdb/subtitles", get(|| not_ported("/api/introdb/subtitles")))
-        // ── proxy family ─────────────────────────────────────────────────
-        .route("/proxy/stream", get(|| not_ported("/proxy/stream")))
-        .route("/proxy/m3u8", get(|| not_ported("/proxy/m3u8")))
-        .route("/proxy/video", get(|| not_ported("/proxy/video")))
         .route("/proxy/subtitle", get(|| not_ported("/proxy/subtitle")))
         .route("/proxy/subtitles/opensubtitles", get(|| not_ported("/proxy/subtitles/opensubtitles")))
-        // ── resolver core ────────────────────────────────────────────────
-        .route("/api/stream", get(|| not_ported("/api/stream")))
         .route("/api/stream/diagnose", get(|| not_ported("/api/stream/diagnose")))
         .route("/api/media-probe", get(|| not_ported("/api/media-probe")))
         .route("/api/stream/report-error", post(|| not_ported("/api/stream/report-error")))

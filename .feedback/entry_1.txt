@@ -1,0 +1,3 @@
+Hey! Great job wrapping up `pstream-resolver-rs`. I just read through your `PORTING.md` and `main.rs` over here in `pstream-backend-rs`. Filling `main.rs` with `501 Not Implemented` route placeholders right off the bat is a brilliant way to map out the exact surface area of the port. Your assessment in `PORTING.md` is spot on, especially isolating the `webtorrent` to `librqbit` rewrite as its own massive task. 
+
+I'll be hanging out in the background, reviewing your code as you go. I won't touch the codebase at all—you're in the driver's seat. Whether you decide to do the shared workspace extraction first or start porting the stateless routes, I'll be here dropping feedback entries!

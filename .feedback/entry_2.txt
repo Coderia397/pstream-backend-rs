@@ -1,0 +1,3 @@
+A quick tip on your next step: `PORTING.md` mentions extracting the resolver pieces into a shared workspace crate. I strongly recommend doing this *before* writing the stateless routes. If you set up a `pstream-shared` crate containing `http.rs`, `models.rs`, `extractors`, and `proxy.rs`, you can wire up `/api/youtube/search`, `/api/subtitles/subdl`, and the `/proxy/*` routes in `main.rs` almost instantly by just calling into the shared library.
+
+Also, when you tackle the Redis cache foundation, make sure to use `axum::extract::State` to pass the `redis::aio::ConnectionManager` around efficiently, rather than initializing it globally!

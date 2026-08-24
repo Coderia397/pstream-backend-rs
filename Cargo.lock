@@ -1142,6 +1142,7 @@ dependencies = [
  "hex",
  "jsonwebtoken",
  "once_cell",
+ "pstream-shared",
  "rand 0.8.7",
  "redis",
  "regex",
@@ -1150,6 +1151,23 @@ dependencies = [
  "serde_json",
  "tokio",
  "tower-http",
+ "urlencoding",
+]
+
+[[package]]
+name = "pstream-shared"
+version = "0.1.0"
+source = "git+https://github.com/Coderia397/pstream-resolver-rs?branch=main#a270908f37b76f083b8ff106234be21f40daf030"
+dependencies = [
+ "axum",
+ "bytes",
+ "futures",
+ "once_cell",
+ "regex",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "tokio",
  "urlencoding",
 ]
 

@@ -11,6 +11,11 @@ edition = "2021"
 # resolve at deploy time, and the compiler catching the shape of every payload.
 
 [dependencies]
+# The 13 provider extractors, HTTP clients, streaming proxy, cache and the
+# CORS/rate-limit policy — shared with the phone resolver rather than copied,
+# so provider fixes land in both services at once.
+pstream-shared = { git = "https://github.com/Coderia397/pstream-resolver-rs", branch = "main" }
+
 tokio      = { version = "1", features = ["rt-multi-thread", "macros", "net", "time", "signal", "process", "fs"] }
 axum       = { version = "0.7", default-features = false, features = ["http1", "json", "query", "tokio", "matched-path"] }
 tower-http = { version = "0.6", features = ["cors", "fs"] }
