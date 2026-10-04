@@ -8,6 +8,7 @@
 --    one (last write wins, decided in the database, so retries and out of order outboxes are safe); a batch push and an
 --    incremental pull each take one round trip; server time cursors never go backwards.
 --  * Audit: security relevant account events are logged and readable by the owner.
+--  * PIN: one attempt counter and one lock shared by verify, set and clear (guessing through set or clear is not possible).
 --  * Hygiene: retention job for event tables, everything rebuilds from this file.
 
 create extension if not exists pgcrypto with schema extensions;
@@ -41,6 +42,8 @@ create trigger profiles_touch before update on public.profiles
 create or replace function public.enforce_profile_limit()
 returns trigger language plpgsql security definer set search_path = '' as $$
 begin
+  -- two parallel inserts for one account must not both pass the count
+  perform pg_advisory_xact_lock(hashtextextended(new.user_id::text, 0));
   if (select count(*) from public.profiles where user_id = new.user_id) >= 5 then
     raise exception 'profile limit reached' using errcode = 'P0001';
   end if;
@@ -251,7 +254,9 @@ declare
   v_titles    jsonb;
   v_progress  jsonb;
   v_settings  jsonb;
-  v_cursor    timestamptz := clock_timestamp();
+  -- the cursor trails the clock by 5 seconds: a row written by a slower, still open transaction gets an older updated_at
+  -- than rows already pulled, and would be skipped forever otherwise. Repeats are harmless, clients merge by client_updated_at.
+  v_cursor    timestamptz := clock_timestamp() - interval '5 seconds';
   v_t_n       integer;
   v_p_n       integer;
   v_t_max     timestamptz;
@@ -268,60 +273,17 @@ begin
     from public.profile_settings s where s.profile_id = p_profile and s.updated_at > p_since;
   if v_t_n >= v_limit then v_cursor := least(v_cursor, v_t_max); end if;
   if v_p_n >= v_limit then v_cursor := least(v_cursor, v_p_max); end if;
+  v_cursor := greatest(v_cursor, p_since);
   return jsonb_build_object('cursor', v_cursor, 'has_more', (v_t_n >= v_limit or v_p_n >= v_limit),
                             'titles', v_titles, 'progress', v_progress, 'settings', v_settings);
 end $$;
 
 -- PIN functions (the only way to read or write a PIN) -------------------------------------------------------------------
-create or replace function public.set_profile_pin(p_profile uuid, p_pin text, p_current text default null)
-returns void language plpgsql security definer set search_path = '' as $$
-declare
-  v_owner uuid;
-  v_hash  text;
-begin
-  select user_id into v_owner from public.profiles where id = p_profile;
-  if v_owner is null or v_owner is distinct from (select auth.uid()) then
-    raise exception 'not allowed' using errcode = '42501';
-  end if;
-  if p_pin !~ '^[0-9]{4}$' then
-    raise exception 'the PIN is 4 digits' using errcode = '22023';
-  end if;
-  select pin_hash into v_hash from public.profile_pins where profile_id = p_profile;
-  if v_hash is not null and (p_current is null or extensions.crypt(p_current, v_hash) <> v_hash) then
-    raise exception 'current PIN is wrong' using errcode = '28000';
-  end if;
-  insert into public.profile_pins (profile_id, pin_hash)
-  values (p_profile, extensions.crypt(p_pin, extensions.gen_salt('bf', 10)))
-  on conflict (profile_id) do update
-    set pin_hash = excluded.pin_hash, failed_attempts = 0, locked_until = null, updated_at = now();
-  update public.profiles set has_pin = true where id = p_profile;
-  perform public.log_account_event(v_owner, 'pin_set', jsonb_build_object('profile_id', p_profile));
-end $$;
-
-create or replace function public.clear_profile_pin(p_profile uuid, p_current text)
-returns void language plpgsql security definer set search_path = '' as $$
-declare
-  v_owner uuid;
-  v_hash  text;
-begin
-  select user_id into v_owner from public.profiles where id = p_profile;
-  if v_owner is null or v_owner is distinct from (select auth.uid()) then
-    raise exception 'not allowed' using errcode = '42501';
-  end if;
-  select pin_hash into v_hash from public.profile_pins where profile_id = p_profile;
-  if v_hash is null then
-    return;
-  end if;
-  if p_current is null or extensions.crypt(p_current, v_hash) <> v_hash then
-    raise exception 'current PIN is wrong' using errcode = '28000';
-  end if;
-  delete from public.profile_pins where profile_id = p_profile;
-  update public.profiles set has_pin = false where id = p_profile;
-  perform public.log_account_event(v_owner, 'pin_cleared', jsonb_build_object('profile_id', p_profile));
-end $$;
-
--- true when the PIN matches or none is set; 5 wrong tries lock the profile for 15 minutes
-create or replace function public.verify_profile_pin(p_profile uuid, p_pin text)
+-- Every comparison of a PIN goes through pin_attempt, so verifying, changing and clearing share one attempt counter and one
+-- lock (5 wrong tries lock the profile for 15 minutes). Without that, set or clear could be used to guess the PIN.
+-- The row is locked while counting, so parallel guesses cannot all read the same counter. A wrong PIN returns false instead
+-- of raising, because an exception would roll back the counter update.
+create or replace function public.pin_attempt(p_profile uuid, p_pin text)
 returns boolean language plpgsql security definer set search_path = '' as $$
 declare
   v_owner  uuid;
@@ -332,7 +294,7 @@ begin
   if v_owner is null or v_owner is distinct from (select auth.uid()) then
     raise exception 'not allowed' using errcode = '42501';
   end if;
-  select * into v_row from public.profile_pins where profile_id = p_profile;
+  select * into v_row from public.profile_pins where profile_id = p_profile for update;
   if not found then
     return true;
   end if;
@@ -351,6 +313,71 @@ begin
     update public.profile_pins set failed_attempts = v_failed where profile_id = p_profile;
   end if;
   return false;
+end $$;
+
+-- true when the PIN matches or none is set
+create or replace function public.verify_profile_pin(p_profile uuid, p_pin text)
+returns boolean language sql security definer set search_path = '' as $$
+  select public.pin_attempt(p_profile, p_pin);
+$$;
+
+-- true when the PIN was set; false when the current PIN was wrong (counted); raises when the current PIN is missing or the profile is locked
+create or replace function public.set_profile_pin(p_profile uuid, p_pin text, p_current text default null)
+returns boolean language plpgsql security definer set search_path = '' as $$
+declare
+  v_owner uuid;
+  v_has   boolean;
+begin
+  select user_id into v_owner from public.profiles where id = p_profile;
+  if v_owner is null or v_owner is distinct from (select auth.uid()) then
+    raise exception 'not allowed' using errcode = '42501';
+  end if;
+  if p_pin !~ '^[0-9]{4}$' then
+    raise exception 'the PIN is 4 digits' using errcode = '22023';
+  end if;
+  select exists (select 1 from public.profile_pins where profile_id = p_profile) into v_has;
+  if v_has then
+    if p_current is null then
+      raise exception 'the current PIN is required' using errcode = '28000';
+    end if;
+    if not public.pin_attempt(p_profile, p_current) then
+      return false;
+    end if;
+  end if;
+  insert into public.profile_pins (profile_id, pin_hash)
+  values (p_profile, extensions.crypt(p_pin, extensions.gen_salt('bf', 10)))
+  on conflict (profile_id) do update
+    set pin_hash = excluded.pin_hash, failed_attempts = 0, locked_until = null, updated_at = now();
+  update public.profiles set has_pin = true where id = p_profile;
+  perform public.log_account_event(v_owner, 'pin_set', jsonb_build_object('profile_id', p_profile));
+  return true;
+end $$;
+
+-- true when cleared (or none was set); false when the current PIN was wrong (counted)
+create or replace function public.clear_profile_pin(p_profile uuid, p_current text)
+returns boolean language plpgsql security definer set search_path = '' as $$
+declare
+  v_owner uuid;
+  v_has   boolean;
+begin
+  select user_id into v_owner from public.profiles where id = p_profile;
+  if v_owner is null or v_owner is distinct from (select auth.uid()) then
+    raise exception 'not allowed' using errcode = '42501';
+  end if;
+  select exists (select 1 from public.profile_pins where profile_id = p_profile) into v_has;
+  if not v_has then
+    return true;
+  end if;
+  if p_current is null then
+    raise exception 'the current PIN is required' using errcode = '28000';
+  end if;
+  if not public.pin_attempt(p_profile, p_current) then
+    return false;
+  end if;
+  delete from public.profile_pins where profile_id = p_profile;
+  update public.profiles set has_pin = false where id = p_profile;
+  perform public.log_account_event(v_owner, 'pin_cleared', jsonb_build_object('profile_id', p_profile));
+  return true;
 end $$;
 
 create or replace function public.delete_my_account()
@@ -407,7 +434,7 @@ grant select, insert on public.feed_events to authenticated;
 
 revoke all on function public.touch_updated_at(), public.sync_row_guard(), public.enforce_profile_limit(), public.keep_last_profile(),
                        public.log_account_event(uuid, text, jsonb), public.audit_profiles(), public.create_profile_defaults(),
-                       public.handle_new_user() from public, anon, authenticated;
+                       public.handle_new_user(), public.pin_attempt(uuid, text) from public, anon, authenticated;
 revoke all on function public.sync_push(uuid, jsonb, jsonb), public.sync_pull(uuid, timestamptz),
                        public.set_profile_pin(uuid, text, text), public.clear_profile_pin(uuid, text),
                        public.verify_profile_pin(uuid, text), public.delete_my_account() from public, anon;
