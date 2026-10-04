@@ -1,4 +1,4 @@
--- Behaviour and security test for 20261004130000_accounts_core.sql.
+-- Behaviour and security test for 20261004130905_accounts_core.sql.
 -- Run with the Supabase MCP execute_sql or the SQL editor. Everything rolls back: the block always ends by raising an
 -- exception whose message is the report ("RESULT" followed by PASS or FAIL lines). Each refusal is checked for its reason,
 -- so a check cannot pass because of an unrelated error.
