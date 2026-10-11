@@ -2,12 +2,13 @@
 """Builds setup.sql, the one file to run in the Supabase SQL editor. It brings any state of the project (empty, or with the first
 accounts migration already applied) to the current schema, and running it again changes nothing.
   * The first migration runs only when public.profiles does not exist yet.
-  * The second migration is written so that every statement can be repeated.
+  * The second and third migrations are written so that every statement can be repeated.
   * schema_versions records what was applied and when."""
 import pathlib
 HERE = pathlib.Path(__file__).resolve().parent
 core = (HERE / "migrations/20261004130905_accounts_core.sql").read_text()
 step2 = (HERE / "migrations/20261011150000_main_profile_and_default_kids.sql").read_text()
+step3 = (HERE / "migrations/20261012100000_devices_and_profile_preferences.sql").read_text()
 marker = "-- realtime for live multi device updates"
 cut = core.index(marker)
 cut = core.rfind("\n", 0, cut) + 1
@@ -37,6 +38,10 @@ insert into public.schema_versions (name) values ('accounts_core') on conflict d
 -- 2. main profile, Kids profile, account details, recent sign in checks, data export --------------------------------------------
 {step2}
 insert into public.schema_versions (name) values ('main_profile_and_default_kids') on conflict do nothing;
+
+-- 3. devices, per profile preferences, account switches ---------------------------------------------------------------------------
+{step3}
+insert into public.schema_versions (name) values ('devices_and_profile_preferences') on conflict do nothing;
 
 select name as applied, applied_at from public.schema_versions order by applied_at;
 """
