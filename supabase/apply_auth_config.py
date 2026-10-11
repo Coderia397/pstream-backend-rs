@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+"""Applies the Supabase Auth settings of Streams: the site address, the allowed redirect addresses, the code lifetime, the
+password length, the email subjects and the branded email templates. It talks to the Supabase Management API.
+
+  python3 apply_auth_config.py            shows what would change (nothing is written)
+  python3 apply_auth_config.py --apply    writes the changes
+
+The access token is read from the environment (SUPABASE_ACCESS_TOKEN) or from the file ~/.supabase/access-token, which is where
+`supabase login` puts it. Create one at https://supabase.com/dashboard/account/tokens. It is never written anywhere by this script.
+Sender settings (custom SMTP) are only sent when SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS and SMTP_FROM are in the environment:
+  SMTP_FROM="no-reply@streams.watch" SMTP_NAME="Streams"
+"""
+import json, os, pathlib, sys, urllib.request, urllib.error
+
+HERE = pathlib.Path(__file__).resolve().parent
+cfg = json.loads((HERE / "auth_config.json").read_text())
+ref = cfg["project_ref"]
+token = os.environ.get("SUPABASE_ACCESS_TOKEN") or ((pathlib.Path.home() / ".supabase/access-token").read_text().strip() if (pathlib.Path.home() / ".supabase/access-token").exists() else "")
+if not token:
+    sys.exit("No access token. Set SUPABASE_ACCESS_TOKEN or put one in ~/.supabase/access-token (see the top of this file).")
+
+def call(method, body=None):
+    req = urllib.request.Request(f"https://api.supabase.com/v1/projects/{ref}/config/auth", method=method, data=json.dumps(body).encode() if body is not None else None,
+                                 headers={"Authorization": f"Bearer {token}", "Content-Type": "application/json", "User-Agent": "streams-auth-config"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            return json.loads(r.read() or b"{}")
+    except urllib.error.HTTPError as e:
+        sys.exit(f"{method} failed: {e.code} {e.read().decode()[:300]}")
+
+want = {"site_url": cfg["site_url"], "uri_allow_list": cfg["uri_allow_list"], "password_min_length": cfg["password_min_length"], "mailer_otp_exp": cfg["mailer_otp_exp"]}
+for kind, subject in cfg["subjects"].items():
+    want[f"mailer_subjects_{kind}"] = subject
+for kind, path in cfg["templates"].items():
+    want[f"mailer_templates_{kind}_content"] = (HERE / path).resolve().read_text()
+if os.environ.get("SMTP_HOST"):
+    want.update({"smtp_host": os.environ["SMTP_HOST"], "smtp_port": os.environ.get("SMTP_PORT", "465"), "smtp_user": os.environ["SMTP_USER"], "smtp_pass": os.environ["SMTP_PASS"],
+                 "smtp_admin_email": os.environ["SMTP_FROM"], "smtp_sender_name": os.environ.get("SMTP_NAME", "Streams")})
+
+current = call("GET")
+changes = {k: v for k, v in want.items() if current.get(k) != v}
+print(f"{len(changes)} of {len(want)} settings differ:")
+for k, v in changes.items():
+    shown = "(%d characters)" % len(v) if isinstance(v, str) and len(v) > 80 else ("(hidden)" if "pass" in k else repr(v))
+    print(f"  {k}: {shown}")
+if "--apply" not in sys.argv:
+    print("Nothing written. Run again with --apply to write these.")
+elif changes:
+    call("PATCH", changes)
+    print("Written.")
