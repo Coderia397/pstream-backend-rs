@@ -6,10 +6,15 @@ alter table public.profile_settings add column if not exists data_usage text not
 alter table public.profile_settings add column if not exists notifications jsonb not null default '{}'::jsonb;
 alter table public.profile_settings add column if not exists blocked_titles jsonb not null default '[]'::jsonb;
 alter table public.profile_settings add column if not exists game_handle text;
+-- Highest British (BBFC) rating a profile may see. 18 means no limit. The older profiles.maturity column is kept and follows it.
+alter table public.profile_settings add column if not exists age_rating text not null default '18';
 do $$
 begin
   if not exists (select 1 from pg_constraint where conname = 'profile_settings_data_usage_check') then
     alter table public.profile_settings add constraint profile_settings_data_usage_check check (data_usage in ('auto', 'low', 'medium', 'high'));
+  end if;
+  if not exists (select 1 from pg_constraint where conname = 'profile_settings_age_rating_check') then
+    alter table public.profile_settings add constraint profile_settings_age_rating_check check (age_rating in ('U', 'PG', '12', '15', '18'));
   end if;
   if not exists (select 1 from pg_constraint where conname = 'profile_settings_game_handle_check') then
     alter table public.profile_settings add constraint profile_settings_game_handle_check check (game_handle is null or game_handle ~ '^[A-Za-z0-9]{3,16}$');

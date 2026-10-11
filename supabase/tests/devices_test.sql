@@ -73,6 +73,15 @@ begin
     report := report || 'PASS a game handle is unique ignoring case' || E'\n';
   end;
 
+  -- age rating: the British scale only
+  update public.profile_settings set age_rating = 'PG' where profile_id = pm;
+  begin
+    update public.profile_settings set age_rating = 'R' where profile_id = pm;
+    report := report || 'FAIL a non British rating was accepted' || E'\n';
+  exception when check_violation then
+    report := report || 'PASS only U, PG, 12, 15 and 18 are accepted as a rating' || E'\n';
+  end;
+
   reset role;
   raise exception 'RESULT%', E'\n' || report;
 end $$;
