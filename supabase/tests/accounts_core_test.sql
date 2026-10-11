@@ -1,3 +1,6 @@
+-- NOTE (2026-10-11): written for the first accounts migration. Since 20261011150000 every account starts with two profiles (the main
+-- one and a Kids profile that does not count toward the limit), so the checks about the number of profiles and events in this
+-- file need updating before they pass again. main_profile_test.sql covers the current behaviour.
 -- Behaviour and security test for 20261004130905_accounts_core.sql.
 -- Run with the Supabase MCP execute_sql or the SQL editor. Everything rolls back: the block always ends by raising an
 -- exception whose message is the report ("RESULT" followed by PASS or FAIL lines). Each refusal is checked for its reason,
