@@ -71,6 +71,31 @@ begin
     report := report || case when sqlerrm = 'recent sign in required' then 'PASS a sign in older than five minutes is refused' else 'FAIL refused for another reason: ' || sqlerrm end || E'\n';
   end;
 
+  -- sensitive actions with the stale sign in still in place
+  begin
+    perform public.reset_profile_pin(pb);
+    report := report || 'FAIL a PIN was reset without a recent sign in' || E'\n';
+  exception when others then
+    report := report || case when sqlerrm = 'recent sign in required' then 'PASS resetting a PIN needs a recent sign in' else 'FAIL refused for another reason: ' || sqlerrm end || E'\n';
+  end;
+  begin
+    perform public.delete_my_account();
+    report := report || 'FAIL the account was deleted without a recent sign in' || E'\n';
+  exception when others then
+    report := report || case when sqlerrm = 'recent sign in required' then 'PASS deleting the account needs a recent sign in' else 'FAIL refused for another reason: ' || sqlerrm end || E'\n';
+  end;
+  begin
+    update public.profiles set kind = 'kids', maturity = 'older_kids' where id = pb;
+    report := report || 'FAIL a profile was switched to Kids without a recent sign in' || E'\n';
+  exception when others then
+    report := report || case when sqlerrm = 'recent sign in required' then 'PASS changing Kids or adult needs a recent sign in' else 'FAIL refused for another reason: ' || sqlerrm end || E'\n';
+  end;
+
+  -- names and data export need no recent sign in
+  perform public.update_account_names('Augusta', 'King');
+  report := report || case when (select first_name || ' ' || last_name from public.account_details) = 'Augusta King' then 'PASS names can be changed' else 'FAIL names not changed' end || E'\n';
+  report := report || case when jsonb_array_length(public.export_my_data() -> 'profiles') >= 4 then 'PASS the data export lists the profiles' else 'FAIL data export' end || E'\n';
+
   reset role;
   raise exception E'RESULT\n%', report;
 end $$;
