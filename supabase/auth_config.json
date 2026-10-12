@@ -1,7 +1,7 @@
 {
   "project_ref": "emvyjhleyhimxxdqybsn",
   "site_url": "https://streams.watch",
-  "uri_allow_list": "https://streams.watch/**,https://www.streams.watch/**,https://pstream-app.pages.dev/**,http://localhost:8080/**",
+  "uri_allow_list": "https://streams.watch/**,https://www.streams.watch/**,https://streams-app.pages.dev/**,http://localhost:8080/**",
   "password_min_length": 8,
   "mailer_otp_exp": 600,
   "subjects": {
