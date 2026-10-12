@@ -1,0 +1,11 @@
+# Streams mail: the account emails (through Supabase's Send Email Hook) and the profile emails, in the reader's language.
+# core    the logic with no network: language choice, wording, layout, webhook signature, hook payload. Tested on this machine.
+# worker  the Cloudflare Worker that receives the hook and sends through Brevo's HTTP API.
+[workspace]
+members = ["core", "worker"]
+resolver = "2"
+
+[profile.release]
+opt-level = "s"
+lto = true
+codegen-units = 1

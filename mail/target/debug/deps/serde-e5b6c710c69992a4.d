@@ -1,0 +1,14 @@
+/Users/ibrahim/code/pstream/pstream-backend-rs/mail/target/debug/deps/serde-e5b6c710c69992a4.d: /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/lib.rs /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/integer128.rs /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/mod.rs /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/de.rs /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/ser.rs /Users/ibrahim/code/pstream/pstream-backend-rs/mail/target/debug/build/serde-c27bf78fa1f9560b/out/private.rs
+
+/Users/ibrahim/code/pstream/pstream-backend-rs/mail/target/debug/deps/libserde-e5b6c710c69992a4.rlib: /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/lib.rs /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/integer128.rs /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/mod.rs /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/de.rs /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/ser.rs /Users/ibrahim/code/pstream/pstream-backend-rs/mail/target/debug/build/serde-c27bf78fa1f9560b/out/private.rs
+
+/Users/ibrahim/code/pstream/pstream-backend-rs/mail/target/debug/deps/libserde-e5b6c710c69992a4.rmeta: /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/lib.rs /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/integer128.rs /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/mod.rs /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/de.rs /Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/ser.rs /Users/ibrahim/code/pstream/pstream-backend-rs/mail/target/debug/build/serde-c27bf78fa1f9560b/out/private.rs
+
+/Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/lib.rs:
+/Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/integer128.rs:
+/Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/mod.rs:
+/Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/de.rs:
+/Users/ibrahim/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/serde-1.0.229/src/private/ser.rs:
+/Users/ibrahim/code/pstream/pstream-backend-rs/mail/target/debug/build/serde-c27bf78fa1f9560b/out/private.rs:
+
+# env-dep:OUT_DIR=/Users/ibrahim/code/pstream/pstream-backend-rs/mail/target/debug/build/serde-c27bf78fa1f9560b/out

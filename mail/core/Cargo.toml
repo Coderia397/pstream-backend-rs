@@ -1,0 +1,12 @@
+[package]
+name = "streams-mail-core"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[dependencies]
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+hmac = "0.12"
+sha2 = "0.10"
+base64 = "0.22"
