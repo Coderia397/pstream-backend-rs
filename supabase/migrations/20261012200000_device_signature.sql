@@ -40,7 +40,7 @@ returns jsonb language plpgsql security definer set search_path = public as $$
 declare
   v_user     uuid := (select auth.uid());
   v_session  uuid := nullif(auth.jwt() ->> 'session_id', '')::uuid;
-  v_country  text := upper(nullif(left(coalesce(p_info ->> 'country', ''), 2), ''));
+  v_country  text := upper(nullif(left(coalesce(p_info ->> 'country', ''), 8), ''));
   v_type     text := coalesce(nullif(p_info ->> 'device_type', ''), 'other');
   v_row      public.account_devices%rowtype;
   v_new      boolean := false;

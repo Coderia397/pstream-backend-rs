@@ -25,14 +25,14 @@ begin
   select count(*) into n from public.profile_settings where profile_id in (p1, p2);
   report := report || case when n = 2 then 'PASS settings row created with each profile' else 'FAIL settings rows: ' || n end || E'\n';
   select count(*) into n from public.account_events where user_id in (u1, u2) and event = 'profile_created';
-  report := report || case when n = 2 then 'PASS profile creation is logged' else 'FAIL profile_created events: ' || n end || E'\n';
+  report := report || case when n = 4 then 'PASS profile creation is logged (main and Kids profile of two accounts)' else 'FAIL profile_created events: ' || n end || E'\n';
 
   -- act as user one
   perform set_config('request.jwt.claims', json_build_object('sub', u1, 'role', 'authenticated')::text, true);
   set local role authenticated;
 
   select count(*) into n from public.profiles;
-  report := report || case when n = 1 then 'PASS user one sees only their profile' else 'FAIL user one sees ' || n || ' profiles' end || E'\n';
+  report := report || case when n = 2 then 'PASS user one sees only their own profiles (main and Kids)' else 'FAIL user one sees ' || n || ' profiles' end || E'\n';
   select count(*) into n from public.profiles where id = p2;
   report := report || case when n = 0 then 'PASS other user''s profile is invisible' else 'FAIL other user''s profile visible' end || E'\n';
 
@@ -112,7 +112,7 @@ begin
     delete from public.profiles where id = p1;
     report := report || 'FAIL the last profile was deleted' || E'\n';
   exception when others then
-    report := report || case when sqlerrm = 'an account needs at least one profile' then 'PASS the last profile of an account cannot be deleted' else 'FAIL refused for another reason: ' || sqlerrm end || E'\n';
+    report := report || case when sqlerrm = 'make another profile the main one before deleting this one' then 'PASS the main profile cannot be deleted first' else 'FAIL refused for another reason: ' || sqlerrm end || E'\n';
   end;
 
   -- PIN
@@ -193,7 +193,7 @@ begin
   reset role;
 
   -- deleting the account removes everything
-  perform set_config('request.jwt.claims', json_build_object('sub', u2, 'role', 'authenticated')::text, true);
+  perform set_config('request.jwt.claims', json_build_object('sub', u2, 'role', 'authenticated', 'amr', json_build_array(json_build_object('method', 'password', 'timestamp', extract(epoch from now())::bigint)))::text, true);
   set local role authenticated;
   perform public.delete_my_account();
   reset role;
