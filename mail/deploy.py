@@ -23,14 +23,14 @@ if "HOOK_SECRET" not in mail:
 
 # 1. build
 subprocess.run(["worker-build", "--release"], cwd=HERE / "worker", check=True)
-build = HERE / "worker/build/worker"
-modules = [p for p in build.iterdir() if p.suffix in (".mjs", ".wasm", ".js")]
+build = HERE / "worker/build"
+modules = [build / "index.js", build / "index_bg.wasm"]
 print("built:", ", ".join(sorted(p.name for p in modules)))
 
 # 2. upload as a module Worker with its variables and secrets
 bindings = [{"type": "plain_text", "name": k, "text": v} for k, v in CONF["vars"].items()]
 bindings += [{"type": "secret_text", "name": "HOOK_SECRET", "text": mail["HOOK_SECRET"]}, {"type": "secret_text", "name": "BREVO_API_KEY", "text": brevo["BREVO_API_KEY"]}]
-metadata = {"main_module": "shim.mjs", "compatibility_date": CONF["compatibility_date"], "bindings": bindings}
+metadata = {"main_module": "index.js", "compatibility_date": CONF["compatibility_date"], "bindings": bindings}
 boundary = uuid.uuid4().hex
 parts = [(f'name="metadata"', "application/json", json.dumps(metadata).encode())]
 for p in modules:
