@@ -7,8 +7,8 @@ password length, the email subjects and the branded email templates. It talks to
 
 The access token is read from the environment (SUPABASE_ACCESS_TOKEN) or from the file ~/.supabase/access-token, which is where
 `supabase login` puts it. Create one at https://supabase.com/dashboard/account/tokens. It is never written anywhere by this script.
-Sender settings (custom SMTP) are only sent when SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS and SMTP_FROM are in the environment:
-  SMTP_FROM="no-reply@streams.watch" SMTP_NAME="Streams"
+Sender settings (Brevo SMTP) are only sent when SMTP_USER and SMTP_PASS are in the environment (the Brevo SMTP login and SMTP
+key); host, port, address and name are in auth_config.json.
 """
 import json, os, pathlib, sys, urllib.request, urllib.error
 
@@ -33,9 +33,12 @@ for kind, subject in cfg["subjects"].items():
     want[f"mailer_subjects_{kind}"] = subject
 for kind, path in cfg["templates"].items():
     want[f"mailer_templates_{kind}_content"] = (HERE / path).resolve().read_text()
-if os.environ.get("SMTP_HOST"):
-    want.update({"smtp_host": os.environ["SMTP_HOST"], "smtp_port": os.environ.get("SMTP_PORT", "465"), "smtp_user": os.environ["SMTP_USER"], "smtp_pass": os.environ["SMTP_PASS"],
-                 "smtp_admin_email": os.environ["SMTP_FROM"], "smtp_sender_name": os.environ.get("SMTP_NAME", "Streams")})
+# Sender: host, port, address and name come from auth_config.json (Brevo); the login and the SMTP key are secrets and only come
+# from the environment, never from a file in the project: SMTP_USER and SMTP_PASS.
+if os.environ.get("SMTP_USER") and os.environ.get("SMTP_PASS"):
+    smtp = cfg["smtp"]
+    want.update({"smtp_host": smtp["host"], "smtp_port": smtp["port"], "smtp_user": os.environ["SMTP_USER"], "smtp_pass": os.environ["SMTP_PASS"],
+                 "smtp_admin_email": smtp["admin_email"], "smtp_sender_name": smtp["sender_name"]})
 
 current = call("GET")
 changes = {k: v for k, v in want.items() if current.get(k) != v}

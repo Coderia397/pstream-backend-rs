@@ -19,5 +19,11 @@
     "recovery": "../../pstream-frontend-rs/brand/email/templates/supabase-reset-password.html",
     "email_change": "../../pstream-frontend-rs/brand/email/templates/supabase-change-email.html",
     "reauthentication": "../../pstream-frontend-rs/brand/email/templates/supabase-reauthentication.html"
+  },
+  "smtp": {
+    "host": "smtp-relay.brevo.com",
+    "port": "587",
+    "admin_email": "no-reply@streams.watch",
+    "sender_name": "Streams"
   }
 }
