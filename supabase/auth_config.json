@@ -13,12 +13,12 @@
     "reauthentication": "Your Streams confirmation code"
   },
   "templates": {
-    "confirmation": "../../pstream-frontend-rs/brand/email/templates/supabase-confirm-signup.html",
-    "invite": "../../pstream-frontend-rs/brand/email/templates/supabase-invite.html",
-    "magic_link": "../../pstream-frontend-rs/brand/email/templates/supabase-magic-link.html",
-    "recovery": "../../pstream-frontend-rs/brand/email/templates/supabase-reset-password.html",
-    "email_change": "../../pstream-frontend-rs/brand/email/templates/supabase-change-email.html",
-    "reauthentication": "../../pstream-frontend-rs/brand/email/templates/supabase-reauthentication.html"
+    "confirmation": "../../streams-frontend-rs/brand/email/templates/supabase-confirm-signup.html",
+    "invite": "../../streams-frontend-rs/brand/email/templates/supabase-invite.html",
+    "magic_link": "../../streams-frontend-rs/brand/email/templates/supabase-magic-link.html",
+    "recovery": "../../streams-frontend-rs/brand/email/templates/supabase-reset-password.html",
+    "email_change": "../../streams-frontend-rs/brand/email/templates/supabase-change-email.html",
+    "reauthentication": "../../streams-frontend-rs/brand/email/templates/supabase-reauthentication.html"
   },
   "smtp": {
     "host": "smtp-relay.brevo.com",

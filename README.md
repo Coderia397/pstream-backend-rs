@@ -1,6 +1,6 @@
-# pstream-backend-rs
+# streams-backend-rs
 
-Rust port of the pstream giga backend.
+Rust port of the streams giga backend.
 
 > **Before adding anything here, read [PORTING.md](PORTING.md).**
 > The JS service this replaces is **not deployed anywhere**. The frontend
@@ -11,7 +11,7 @@ Rust port of the pstream giga backend.
 ## What's live
 
 Eleven routes, wired to
-[`pstream-shared`](https://github.com/Coderia397/pstream-resolver-rs) rather
+[`streams-shared`](https://github.com/Coderia397/streams-resolver-rs) rather
 than reimplemented — the same code the phone runs, so a provider fix lands in
 both services at once.
 

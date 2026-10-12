@@ -1129,7 +1129,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "33cb294fe86a74cbcf50d4445b37da762029549ebeea341421c7c70370f86cac"
 
 [[package]]
-name = "pstream-backend"
+name = "streams-backend"
 version = "0.1.0"
 dependencies = [
  "axum",
@@ -1142,7 +1142,7 @@ dependencies = [
  "hex",
  "jsonwebtoken",
  "once_cell",
- "pstream-shared",
+ "streams-shared",
  "rand 0.8.7",
  "redis",
  "regex",
@@ -1155,9 +1155,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "pstream-shared"
+name = "streams-shared"
 version = "0.1.0"
-source = "git+https://github.com/Coderia397/pstream-resolver-rs?branch=main#eb7a0f331d3adeea7163f7dcbc0a8ec56aefcfc6"
+source = "git+https://github.com/Coderia397/streams-resolver-rs?branch=main#eb7a0f331d3adeea7163f7dcbc0a8ec56aefcfc6"
 dependencies = [
  "axum",
  "bytes",

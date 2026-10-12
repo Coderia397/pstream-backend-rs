@@ -12,7 +12,7 @@ revoke all on public.schema_versions from anon, authenticated;
 do $core$
 begin
   if to_regclass('public.profiles') is null then
--- pstream accounts, v2 (design: notes/06-accounts-audit-and-design.md, review notes in notes/23-accounts-architecture.md)
+-- streams accounts, v2 (design: notes/06-accounts-audit-and-design.md, review notes in notes/23-accounts-architecture.md)
 -- Account = Supabase auth user. Up to 5 profiles per account. Everything per profile hangs off profiles.id.
 --
 -- Properties this migration guarantees:

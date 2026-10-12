@@ -4,8 +4,8 @@ repository. English is the full set; another language holds what has been transl
 when an email is written. Run it after the translations change, then rebuild the Worker."""
 import json, pathlib, sys
 HERE = pathlib.Path(__file__).resolve().parent
-I18N = HERE.parent.parent / "pstream-frontend-rs" / "i18n"
-sys.path.insert(0, str(HERE.parent.parent / "pstream-frontend-rs" / "scripts" / "i18n"))
+I18N = HERE.parent.parent / "streams-frontend-rs" / "i18n"
+sys.path.insert(0, str(HERE.parent.parent / "streams-frontend-rs" / "scripts" / "i18n"))
 import ftl
 LANGS = ["en", "ar", "de", "es", "fr", "hi", "it", "ja", "ko", "nl", "pl", "pt", "ru", "sv", "tr", "zh"]
 (HERE / "bundles").mkdir(exist_ok=True)

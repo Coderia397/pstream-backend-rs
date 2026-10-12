@@ -8,7 +8,7 @@ use axum::{
     response::{IntoResponse, Redirect, Response},
     Json,
 };
-use pstream_shared::{cache, cors, extractors, ratelimit, subdl, youtube, MediaKind, ProviderResult};
+use streams_shared::{cache, cors, extractors, ratelimit, subdl, youtube, MediaKind, ProviderResult};
 use serde::Deserialize;
 use serde_json::json;
 use std::time::Duration;
@@ -44,7 +44,7 @@ pub async fn healthcheck(headers: HeaderMap) -> Response {
         &headers,
         json!({
             "ok": true,
-            "service": "pstream-backend",
+            "service": "streams-backend",
             "runtime": "rust",
             "providers": extractors::PROVIDERS.len() + 4, // table + vixsrc, lookmovie, moviebox, nontongo
         }),

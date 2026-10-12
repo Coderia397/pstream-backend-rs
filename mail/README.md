@@ -5,7 +5,7 @@ Sends the account emails (through Supabase's Send Email Hook) and, later, the pr
 
 * `core/`   logic with no network, tested with `cargo test -p streams-mail-core`
 * `worker/` the Cloudflare Worker (`worker-build`)
-* `bundles/` email wording per language, made by `python3 build_bundles.py` from the shared translations (`email-*` in `pstream-frontend-rs/i18n`)
+* `bundles/` email wording per language, made by `python3 build_bundles.py` from the shared translations (`email-*` in `streams-frontend-rs/i18n`)
 * `worker_config.json` names and addresses (no secrets); secrets are read from `~/.config/streams/*.env` by `deploy.py`
 * `python3 deploy.py` builds, uploads and attaches `mail.streams.watch`
 

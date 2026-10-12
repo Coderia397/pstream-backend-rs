@@ -1,4 +1,4 @@
-//! pstream giga backend — Rust port of `index.js`.
+//! streams giga backend — Rust port of `index.js`.
 //!
 //! NOTE: the JS service this replaces is not deployed anywhere; see
 //! PORTING.md. The full route surface of the
@@ -47,7 +47,7 @@ async fn not_ported(what: &'static str) -> Response {
 }
 
 async fn root() -> Response {
-    Json(json!({ "ok": true, "service": "pstream-backend", "runtime": "rust" })).into_response()
+    Json(json!({ "ok": true, "service": "streams-backend", "runtime": "rust" })).into_response()
 }
 
 async fn ping() -> Response {
@@ -71,12 +71,12 @@ async fn main() {
         .route("/api/stream", get(stateless::stream))
         .route("/api/youtube/search", get(stateless::youtube_search))
         .route("/api/subtitles/subdl", get(stateless::subdl_search))
-        .route("/proxy/stream", get(pstream_shared::proxy::stream))
+        .route("/proxy/stream", get(streams_shared::proxy::stream))
         .route("/proxy/m3u8", get(stateless::proxy_alias))
         .route("/proxy/video", get(stateless::proxy_alias))
         .route("/api/introdb/media", get(passthrough::media))
         .route("/proxy/subtitle", get(passthrough::subtitle))
-        .route("/api/media-probe", get(pstream_shared::probe::media_probe))
+        .route("/api/media-probe", get(streams_shared::probe::media_probe))
         // ── still on Node ────────────────────────────────────────────────
         .route("/api/debug-providers", get(|| not_ported("/api/debug-providers")))
         .route("/api/providers/health", get(|| not_ported("/api/providers/health")))

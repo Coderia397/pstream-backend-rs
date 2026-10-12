@@ -10,7 +10,7 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use pstream_shared::{
+use streams_shared::{
     cors,
     http::{get_text_with, GIGA},
 };
@@ -19,12 +19,12 @@ use serde_json::{json, Value};
 use std::time::Duration;
 
 const INTRODB: &str = "https://api.theintrodb.org";
-const PSTREAM_ORIGIN: &str = "https://pstream.watch";
+const STREAMS_ORIGIN: &str = "https://pstream.watch";
 
 /// IntroDB rejects requests that don't look like they came from the site.
 fn introdb_headers() -> Vec<(&'static str, &'static str)> {
     vec![
-        ("Origin", PSTREAM_ORIGIN),
+        ("Origin", STREAMS_ORIGIN),
         ("Referer", "https://pstream.watch/"),
         ("Accept", "application/json"),
     ]
@@ -132,7 +132,7 @@ pub async fn subtitle(headers: HeaderMap, Query(q): Query<SubtitleQuery>) -> Res
     }
 
     let extra = [
-        ("User-Agent", "Mozilla/5.0 (compatible; PStreamProxy/2.0)"),
+        ("User-Agent", "Mozilla/5.0 (compatible; StreamsProxy/2.0)"),
         ("Accept", "text/vtt,text/*,*/*"),
     ];
 

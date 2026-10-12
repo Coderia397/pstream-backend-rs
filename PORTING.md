@@ -11,7 +11,7 @@ Spaces", and this document originally read that as *deployed there*. It isn't.
 Checking what the frontend actually talks to:
 
 ```
-pstream-frontend/.env
+streams-frontend/.env
   VITE_GIGA_BACKEND_URL=https://resolver.pstream.watch     ← the phone
   VITE_SUPABASE_URL=https://…supabase.co                   ← called from the browser
 ```
@@ -34,7 +34,7 @@ question is whether they should exist at all rather than which crate replaces
 
 Routes worth having, if this service ever gets deployed:
 
-- the resolver core, already done in `pstream-shared`
+- the resolver core, already done in `streams-shared`
 - the proxy family, already done
 - provider health, if you want reliability scores to survive a restart
 
@@ -46,8 +46,8 @@ is unreferenced by the frontend as it stands.
 | JS | Rust | Notes |
 |---|---|---|
 | express | axum | proven in the resolver |
-| cors | `pstream_shared::cors` | keep the allowlist, not `*` |
-| axios | `pstream_shared::http` | already shared |
+| cors | `streams_shared::cors` | keep the allowlist, not `*` |
+| axios | `streams_shared::http` | already shared |
 | ioredis | `redis` | optional by design — see below |
 | jsonwebtoken | `jsonwebtoken` | |
 | tweetnacl | `ed25519-dalek` | `utils/challenge.js` |
@@ -72,7 +72,7 @@ on the phone.
 
 ## Already carried over
 
-Nine routes are live here, wired to `pstream-shared` rather than
+Nine routes are live here, wired to `streams-shared` rather than
 reimplemented: `/api/stream`, `/api/youtube/search`, `/api/subtitles/subdl`,
 `/proxy/stream`, the two proxy aliases, `/api/introdb/media`,
 `/proxy/subtitle`, plus ping/healthcheck.
