@@ -25,5 +25,8 @@
     "port": "587",
     "admin_email": "no-reply@streams.watch",
     "sender_name": "Streams"
+  },
+  "hook": {
+    "uri": "https://mail.streams.watch/hook/send-email"
   }
 }
