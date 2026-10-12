@@ -31,13 +31,14 @@ begin
     update public.profiles set is_main = true where user_id = u and name = 'Two';
     report := report || 'FAIL a client made a profile main' || E'\n';
   exception when others then
-    report := report || case when sqlerrm = 'not allowed' then 'PASS a client cannot set is_main' else 'FAIL refused for another reason: ' || sqlerrm end || E'\n';
+    -- refused either by the column privileges (no update right on is_main) or by the guard trigger; both are a pass
+    report := report || case when sqlerrm = 'not allowed' or sqlerrm like 'permission denied for table profiles%' then 'PASS a client cannot set is_main' else 'FAIL refused for another reason: ' || sqlerrm end || E'\n';
   end;
   begin
     insert into public.profiles (user_id, name, auto_kids) values (u, 'Sneaky', true);
     report := report || 'FAIL a client hid a profile from the limit' || E'\n';
   exception when others then
-    report := report || case when sqlerrm = 'not allowed' then 'PASS a client cannot set auto_kids' else 'FAIL refused for another reason: ' || sqlerrm end || E'\n';
+    report := report || case when sqlerrm = 'not allowed' or sqlerrm like 'permission denied for table profiles%' then 'PASS a client cannot set auto_kids' else 'FAIL refused for another reason: ' || sqlerrm end || E'\n';
   end;
 
   -- the main profile cannot be deleted until another one takes its place

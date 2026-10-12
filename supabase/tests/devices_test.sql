@@ -6,6 +6,7 @@ declare
   other uuid := gen_random_uuid();
   s1 uuid := gen_random_uuid();
   s2 uuid := gen_random_uuid();
+  so uuid := gen_random_uuid();   -- a session of the other account
   pm uuid; pk uuid;
   n integer; report text := '';
 begin
@@ -28,10 +29,10 @@ begin
 
   -- a session of another account is not touched
   reset role;
-  insert into auth.sessions (id, user_id, created_at, updated_at) values (gen_random_uuid(), other, now(), now());
+  insert into auth.sessions (id, user_id, created_at, updated_at) values (so, other, now(), now());
   perform set_config('request.jwt.claims', json_build_object('sub', u, 'role', 'authenticated', 'session_id', s1, 'amr', json_build_array(json_build_object('method', 'password', 'timestamp', extract(epoch from now())::bigint)))::text, true);
   set local role authenticated;
-  perform public.revoke_my_session((select id from auth.sessions where user_id = other limit 1));
+  perform public.revoke_my_session(so);
   reset role;
   report := report || case when (select count(*) from auth.sessions where user_id = other) = 1 then 'PASS another account''s session is not removed' else 'FAIL removed a session of another account' end || E'\n';
 
