@@ -13,6 +13,15 @@ key); host, port, address and name are in auth_config.json.
 import json, os, pathlib, sys, urllib.request, urllib.error
 
 HERE = pathlib.Path(__file__).resolve().parent
+# Secrets live outside the project, in private files on this Mac (mode 600): ~/.config/streams/brevo.env (SMTP_USER, SMTP_PASS)
+# and ~/.config/streams/supabase.env (SUPABASE_ACCESS_TOKEN). Values already in the environment win.
+for name in ("brevo.env", "supabase.env", "cloudflare.env"):
+    f = pathlib.Path.home() / ".config/streams" / name
+    if f.exists():
+        for line in f.read_text().splitlines():
+            if "=" in line and not line.lstrip().startswith("#"):
+                k, v = line.split("=", 1)
+                os.environ.setdefault(k.strip(), v.strip())
 cfg = json.loads((HERE / "auth_config.json").read_text())
 ref = cfg["project_ref"]
 token = os.environ.get("SUPABASE_ACCESS_TOKEN") or ((pathlib.Path.home() / ".supabase/access-token").read_text().strip() if (pathlib.Path.home() / ".supabase/access-token").exists() else "")
