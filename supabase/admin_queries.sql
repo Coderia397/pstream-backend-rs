@@ -27,3 +27,7 @@ select p.id as profile_id, p.name, p.kind, p.is_main, p.auto_kids, p.has_pin, p.
 
 -- 4. Recent security events of one account
 select ts, event, meta from public.account_events where user_id = '00000000-0000-0000-0000-000000000000' order by ts desc limit 50;
+
+-- 5. The signed in browsers of one account: one row per sign in (not per device), with the browser text each one signed in with
+select s.id, s.created_at, coalesce(s.refreshed_at, s.updated_at) as last_seen, s.user_agent
+  from auth.sessions s where s.user_id = '00000000-0000-0000-0000-000000000000' order by s.created_at;
