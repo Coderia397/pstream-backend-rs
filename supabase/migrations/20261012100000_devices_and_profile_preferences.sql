@@ -52,18 +52,7 @@ begin
   perform public.log_account_event(v_user, 'switch_' || p_name, jsonb_build_object('value', p_value));
 end $$;
 
--- Devices: the sessions of the signed in account. No address is returned, only the browser line and the times. -----------------
-create or replace function public.list_my_sessions()
-returns table (id uuid, created_at timestamptz, last_seen timestamptz, user_agent text, is_current boolean)
-language sql stable security definer set search_path = auth, public as $$
-  select s.id, s.created_at, coalesce(s.refreshed_at, s.updated_at, s.created_at), s.user_agent,
-         s.id = nullif(auth.jwt() ->> 'session_id', '')::uuid
-    from auth.sessions s
-   where s.user_id = (select auth.uid())
-   order by coalesce(s.refreshed_at, s.updated_at, s.created_at) desc nulls last
-   limit 50
-$$;
-
+-- Devices: the list of sessions (list_my_sessions) is defined in 20261012200000_device_signature.sql, with the device details.
 create or replace function public.revoke_my_session(p_id uuid) returns void
 language plpgsql security definer set search_path = auth, public as $$
 declare
@@ -77,7 +66,7 @@ begin
   perform public.log_account_event(v_user, 'session_revoked', jsonb_build_object('session_id', p_id));
 end $$;
 
-revoke all on function public.set_account_switch(text, boolean), public.list_my_sessions(), public.revoke_my_session(uuid) from public, anon;
-grant execute on function public.set_account_switch(text, boolean), public.list_my_sessions(), public.revoke_my_session(uuid) to authenticated;
+revoke all on function public.set_account_switch(text, boolean), public.revoke_my_session(uuid) from public, anon;
+grant execute on function public.set_account_switch(text, boolean), public.revoke_my_session(uuid) to authenticated;
 
 -- the data export includes the new columns through the existing tables; nothing else to change
