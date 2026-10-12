@@ -119,7 +119,8 @@ end $$;
 
 -- The last profile stays, and so does the main one until another profile has taken its place.
 create or replace function public.keep_last_profile() returns trigger
-language plpgsql set search_path = public, auth as $$
+-- security definer: it reads auth.users, which the signed in role may not read (deleting a profile from the app would fail otherwise)
+language plpgsql security definer set search_path = public, auth as $$
 begin
   if exists (select 1 from auth.users u where u.id = old.user_id) then
     if (select count(*) from public.profiles where user_id = old.user_id) <= 1 then
