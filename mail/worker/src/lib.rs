@@ -1,7 +1,7 @@
 //! The Streams mail Worker. It receives Supabase's Send Email Hook, checks the signature, writes the email in the language saved
-//! for the user and sends it through Brevo's HTTP API. Settings come from the Worker's variables and secrets, none are written here:
-//!   variables: BRAND_NAME, SITE_URL, HELP_URL, HELP_EMAIL, SENDER_EMAIL, CODE_MINUTES
-//!   secrets:   HOOK_SECRET (the Supabase hook secret), BREVO_API_KEY
+//! for the user and sends it through Resend's HTTP API (Brevo's can be chosen with MAIL_PROVIDER). Settings come from the Worker's variables and secrets, none are written here:
+//!   variables: BRAND_NAME, SITE_URL, HELP_URL, HELP_EMAIL, SENDER_EMAIL, CODE_MINUTES, MAIL_PROVIDER (resend or brevo)
+//!   secrets:   HOOK_SECRET (the Supabase hook secret), RESEND_API_KEY, BREVO_API_KEY (only the one in use is needed)
 use serde_json::json;
 use streams_mail_core::{
     hook::{self, Hook},
@@ -19,29 +19,56 @@ fn refuse(status: u16, message: &str) -> Result<Response> {
     Response::from_json(&json!({ "error": { "http_code": status, "message": message } })).map(|r| r.with_status(status))
 }
 
-async fn send(env: &Env, to: &str, rendered: &render::Rendered) -> Result<()> {
-    let key = env.secret("BREVO_API_KEY")?.to_string();
-    let body = json!({
-        "sender": { "name": var(env, "BRAND_NAME")?, "email": var(env, "SENDER_EMAIL")? },
-        "to": [{ "email": to }],
-        "subject": rendered.subject,
-        "htmlContent": rendered.html,
-        "textContent": rendered.text,
-    });
+/// Posts one JSON body to a provider and turns a refusal into an error that names the provider.
+async fn post_json(provider: &str, url: &str, auth: (&str, &str), body: serde_json::Value) -> Result<()> {
     let headers = Headers::new();
-    headers.set("api-key", &key)?;
+    headers.set(auth.0, auth.1)?;
     headers.set("content-type", "application/json")?;
     headers.set("accept", "application/json")?;
-    // Brevo sits behind Cloudflare, which refuses requests with no recognisable client name
+    // the providers sit behind Cloudflare, which refuses requests with no recognisable client name
     headers.set("user-agent", "streams-mail/1.0 (+https://streams.watch)")?;
     let mut init = RequestInit::new();
     init.with_method(Method::Post).with_headers(headers).with_body(Some(body.to_string().into()));
-    let mut response = Fetch::Request(Request::new_with_init("https://api.brevo.com/v3/smtp/email", &init)?).send().await?;
+    let mut response = Fetch::Request(Request::new_with_init(url, &init)?).send().await?;
     if !(200..300).contains(&response.status_code()) {
         let detail = response.text().await.unwrap_or_default();
-        return Err(Error::RustError(format!("brevo answered {}: {}", response.status_code(), detail.chars().take(200).collect::<String>())));
+        return Err(Error::RustError(format!("{provider} answered {}: {}", response.status_code(), detail.chars().take(200).collect::<String>())));
     }
     Ok(())
+}
+
+/// Sends through the provider named by MAIL_PROVIDER ("resend", the default, or "brevo"). Both are plain HTTPS calls; neither
+/// is given any link to rewrite because Resend leaves tracking off.
+async fn send(env: &Env, to: &str, rendered: &render::Rendered) -> Result<()> {
+    let brand = var(env, "BRAND_NAME")?;
+    let sender = var(env, "SENDER_EMAIL")?;
+    let reply_to = var(env, "HELP_EMAIL")?;
+    match var(env, "MAIL_PROVIDER").unwrap_or_else(|_| "resend".to_string()).as_str() {
+        "brevo" => {
+            let key = env.secret("BREVO_API_KEY")?.to_string();
+            let body = json!({
+                "sender": { "name": brand, "email": sender },
+                "replyTo": { "email": reply_to },
+                "to": [{ "email": to }],
+                "subject": rendered.subject,
+                "htmlContent": rendered.html,
+                "textContent": rendered.text,
+            });
+            post_json("brevo", "https://api.brevo.com/v3/smtp/email", ("api-key", &key), body).await
+        }
+        _ => {
+            let key = env.secret("RESEND_API_KEY")?.to_string();
+            let body = json!({
+                "from": format!("{brand} <{sender}>"),
+                "reply_to": reply_to,
+                "to": [to],
+                "subject": rendered.subject,
+                "html": rendered.html,
+                "text": rendered.text,
+            });
+            post_json("resend", "https://api.resend.com/emails", ("authorization", &format!("Bearer {key}")), body).await
+        }
+    }
 }
 
 async fn send_email_hook(mut req: Request, env: Env) -> Result<Response> {

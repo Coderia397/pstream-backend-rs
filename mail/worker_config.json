@@ -8,6 +8,7 @@
     "HELP_URL": "https://streams.watch/help",
     "HELP_EMAIL": "help@streams.watch",
     "SENDER_EMAIL": "no-reply@streams.watch",
-    "CODE_MINUTES": "10"
+    "CODE_MINUTES": "10",
+    "MAIL_PROVIDER": "resend"
   }
 }
