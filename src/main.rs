@@ -71,7 +71,7 @@ async fn main() {
         .route("/api/stream", get(stateless::stream))
         .route("/api/youtube/search", get(stateless::youtube_search))
         .route("/api/subtitles/subdl", get(stateless::subdl_search))
-        .route("/proxy/stream", get(streams_shared::proxy::stream))
+        .route("/proxy/stream", get(stateless::proxy_gone))
         .route("/proxy/m3u8", get(stateless::proxy_alias))
         .route("/proxy/video", get(stateless::proxy_alias))
         .route("/api/introdb/media", get(passthrough::media))

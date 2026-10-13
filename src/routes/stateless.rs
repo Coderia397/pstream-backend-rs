@@ -207,6 +207,11 @@ pub async fn subdl_search(headers: HeaderMap, Query(p): Query<SubdlQuery>) -> Re
 /// Both are historical aliases the frontend may still hold in cached bundles.
 /// index.js answers them with a permanent redirect carrying the query string
 /// through, and so do we.
+/// The shared crate no longer carries the stream proxy (removed with the unused proxy logic), so the target of the aliases answers 410 Gone.
+pub async fn proxy_gone() -> Response {
+    (StatusCode::GONE, "the stream proxy was removed").into_response()
+}
+
 pub async fn proxy_alias(uri: Uri) -> Response {
     let qs = uri.query().unwrap_or_default();
     Redirect::permanent(&format!("/proxy/stream?{qs}")).into_response()
