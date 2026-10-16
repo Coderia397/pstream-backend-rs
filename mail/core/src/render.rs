@@ -159,7 +159,7 @@ pub fn render(brand: &Brand, req: &Request) -> Rendered {
     if let Some((label, link)) = &button {
         let href = escape(link);
         inner.push_str(&format!(
-            "<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\"><tr><td style=\"background:#2f6bff;border-radius:8px;\">\
+            "<table role=\"presentation\" cellpadding=\"0\" cellspacing=\"0\"><tr><td class=\"btn-cell\" style=\"background:#2f6bff;border-radius:4px;\">\
              <a href=\"{href}\" style=\"display:inline-block;padding:14px 28px;font-size:16px;font-weight:700;color:#ffffff;text-decoration:none;font-family:{font};\">{}</a></td></tr></table>\
              <p class=\"muted\" style=\"margin:22px 0 0;font-size:13px;line-height:1.5;color:#6b6b70;\">{}<br><a href=\"{href}\" style=\"color:#6b6b70;word-break:break-all;\">{href}</a></p>",
             escape(label),
@@ -171,7 +171,7 @@ pub fn render(brand: &Brand, req: &Request) -> Rendered {
     let footer_html = escape(&footer).replace(&escape(&help_center), &format!("<a href=\"{}\" style=\"color:#8a8a8f;\">{}</a>", escape(brand.help_url), escape(&help_center)));
     let html = format!(
         "<!doctype html><html lang=\"{lang}\" dir=\"{dir}\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><meta name=\"color-scheme\" content=\"light dark\">\
-         <style>@media (prefers-color-scheme: dark){{.bg-page{{background:#0b0b0c!important}}.card{{background:#16161a!important}}.ink{{color:#f3f1ec!important}}.body{{color:#d6d6da!important}}.muted{{color:#a8a8ad!important}}.rule{{border-color:#2a2a2e!important}}}}\
+         <style>.btn-cell:hover{{background:#4a82ff!important}}@media (prefers-color-scheme: dark){{.bg-page{{background:#0b0b0c!important}}.card{{background:#16161a!important}}.ink{{color:#f3f1ec!important}}.body{{color:#d6d6da!important}}.muted{{color:#a8a8ad!important}}.rule{{border-color:#2a2a2e!important}}}}\
          @media only screen and (max-width:600px){{.pad{{padding-left:22px!important;padding-right:22px!important}}}}</style></head>\
          <body class=\"bg-page\" style=\"margin:0;padding:0;background:#f3f1ec;\"><table role=\"presentation\" width=\"100%\" cellpadding=\"0\" cellspacing=\"0\" class=\"bg-page\" style=\"background:#f3f1ec;\"><tr><td align=\"center\" style=\"padding:32px 16px;\">\
          <table role=\"presentation\" width=\"560\" cellpadding=\"0\" cellspacing=\"0\" class=\"card\" style=\"width:100%;max-width:560px;background:#ffffff;border-radius:14px;overflow:hidden;\">\
